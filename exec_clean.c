@@ -6,7 +6,7 @@
 /*   By: martalop <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/13 19:14:49 by martalop          #+#    #+#             */
-/*   Updated: 2024/10/14 18:54:43 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 04:23:45 by martalop         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ int	prep_cmds(t_cmd *cmd, t_info *info, t_exec *exec_info)
 	cmd->path = find_path(exec_info->paths, cmd->arr_cmd);
 	if (!cmd->path)
 		return (2);
-	if (cmd->next) // quiero NO haga pipe para el último comando
+	if (cmd->next)
 	{
 		pipe(exec_info->pipe_end);
 		cmd->fd_out = exec_info->pipe_end[1];
@@ -125,9 +125,9 @@ int	exec_mult_cmd(t_cmd *tmp, t_exec *exec_info, t_info *info)
 			signal(SIGINT, handle_norm_sig);
 			mult_child(cmd, info, exec_info);
 		}
-		close(exec_info->pipe_end[1]); // cierro la parte de escritura de la pipe actual
+		close(exec_info->pipe_end[1]);
 		if (cmd->fd_in != -1) 
-			close(cmd->fd_in); // cierro la parte de lectura de la pipe anterior 
+			close(cmd->fd_in);
 		cmd = cmd->next;
 	}
 	close(exec_info->pipe_end[0]);
@@ -143,12 +143,12 @@ int	exec_simp_cmd(t_cmd *cmd, t_info *info, t_exec *exec_info)
 		expand_files(cmd->redirs, info->envp, info->prev_ex_stat);
 		if (open_redir(cmd) == 1)
 		{
-			info->ex_stat = 256;
+			info->ex_stat = 1;
 			return (1);
 		}
 		if (redirect(cmd) == 1)
 		{
-			info->ex_stat = 256;
+			info->ex_stat = 1;
 			return (1);
 		}
 		return (exec_builtin(cmd->arr_cmd, info, cmd, exec_info));
@@ -166,6 +166,14 @@ int	exec_simp_cmd(t_cmd *cmd, t_info *info, t_exec *exec_info)
 	{
 		signal_handle(info->ex_stat);
 		info->ex_stat = g_global;
+	}
+	if (g_global == 130 || g_global == 131)
+	{
+		if (g_global == 131)
+			write(2, "Quit: \n", 7);
+		else
+			write(2, "\n", 1);
+		g_global = 0;
 	}
 	return (0);
 }
@@ -186,6 +194,7 @@ int	set_exec_info(t_envp *envp, t_exec *exec_info, t_cmd *segmts)
 
 int	executor(t_cmd *segmts, t_info *info)
 {
+	int	i;
 	t_cmd	*aux;
 	t_exec	exec_info;
 	
@@ -195,6 +204,7 @@ int	executor(t_cmd *segmts, t_info *info)
 	if (set_exec_info(info->envp, &exec_info, segmts) == 1)
 		return (-1);
 	aux = segmts;
+	g_global = 0;
 	find_heredocs(segmts);
 	if (g_global == 130 || g_global == 131)
 	{
@@ -205,33 +215,31 @@ int	executor(t_cmd *segmts, t_info *info)
 	}
 	if (!segmts->next)
 	{
-		exec_simp_cmd(segmts, info, &exec_info);
+		/*info->ex_stat = */exec_simp_cmd(segmts, info, &exec_info);
 		dup2(exec_info.or_fd[0], 0);
 		dup2(exec_info.or_fd[1], 1);
 		free_exec_info(&exec_info);
 		return (info->ex_stat);
 	}
-	exec_mult_cmd(segmts, &exec_info, info);
+	if (exec_mult_cmd(segmts, &exec_info, info) == 2)
+		return (-1);
+	i = 0;
 	while (aux)
 	{
-		info->ex_stat = 0;
 		waitpid(aux->pid, &info->ex_stat, 0);
-	//	info->prev_ex_stat = info->ex_stat;
-		if (aux->pid != -1)		
-		{
-			signal_handle(info->ex_stat);
-			info->ex_stat = g_global;
-		}
-		if (aux->next && (info->ex_stat == 130 || info->ex_stat == 131))
-		{
-			printf ("hola\n");
-			g_global = 0;
-			free_exec_info(&exec_info);
-			return (info->ex_stat);
-		}
-		//printf("%d en cmd con pid %d\n", WEXITSTATUS(info->ex_stat), aux->pid);
 		aux = aux->next;
+		i++;
+	}
+	signal_handle(info->ex_stat);
+	info->ex_stat = g_global;
+	if (g_global == 130 || g_global == 131)
+	{
+		if (g_global == 131)
+			write(2, "Quit: \n", 7);
+		else
+			write(2, "\n", 1);
+		g_global = 0;
 	}
 	free_exec_info(&exec_info);
-	return (WEXITSTATUS(info->ex_stat));
+	return (info->ex_stat);
 }

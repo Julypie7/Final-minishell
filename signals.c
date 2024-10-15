@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/11 12:33:38 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/14 18:28:16 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 03:14:17 by martalop         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,14 +57,15 @@ void	signal_handle(int status) // to update ex_value after performing simple com
 	{
 		if (WTERMSIG(status) == SIGQUIT)
 		{
-			ft_putstr_fd("Quit: \n", 2);
+		//	ft_putstr_fd("Quit: \n", 2);
 			g_global = 131;
 		}
 		else if (WTERMSIG(status) == SIGINT)
 		{
-			ft_putstr_fd("\n", 2);
+		//	ft_putstr_fd("\n", 2);
 			g_global = 130;
 		}
+		g_global = 128 + WTERMSIG(status);
 	}
 }
 
@@ -73,15 +74,9 @@ void	wif_herdoc(int status) // to update exx_value after performing heredock (I 
 	if (WIFEXITED(status))
 	{
 		if (status == 256)
-		{
-			write(2, "enter 1\n", 8);
 			g_global = 1;
-		}
 	}
 	else if (WIFSIGNALED(status) && (WTERMSIG(status) == SIGINT))
-	{
-		write(2, "enter 2\n", 8);
 		g_global = 1;
-	}
 	signal_handle(status);
 }

@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:56:35 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/14 18:03:15 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 04:50:27 by martalop         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,13 @@ int	start_reading(t_info *info)
 	i = 0;
 	while (1)
 	{
-		g_global = 0;
+	//	if (info->ex_stat != 130 && info->ex_stat != 131 && info->ex_stat != 127 && g_global != 131 && g_global != 130)
+	//	   g_global = 0;
+		g_global = info->ex_stat;
 		signal(SIGINT, handle_norm_sig);
 		signal(SIGQUIT, SIG_IGN);
 		info->prev_ex_stat = info->ex_stat;
-		info->ex_stat = 0;
+		//info->ex_stat = g_global;
 		info->rl = readline("our minishell: ");
 		if (!info->rl)
 		{
@@ -74,15 +76,29 @@ int	start_reading(t_info *info)
 //		info->exit = do_shell(info->rl, info);
 		if (!lexer(info))
 		{
+	//		printf("lexer went wrong\n");
+			printf("exit status: %d\n", info->ex_stat);
+			printf("global: %d\n", g_global);
 			free(info->rl);
-			info->ex_stat = info->prev_ex_stat;
+			if (g_global == 130 || g_global == 131)
+			{
+				printf("I change ex_stat to global\n");
+				info->ex_stat = g_global;
+			}
+			else
+			{
+				printf("I change ex_stat to prev_ex_stat\n");
+				info->ex_stat = info->prev_ex_stat;
+			}
 			continue;
 		}
 		if (!info->tokens)
 		{
+			printf("tokens dont exist\n");
 			free(info->rl);
 			free_lexlst(info->tokens);
 			info->tokens = NULL;
+			g_global = info->ex_stat;
 			info->ex_stat = info->prev_ex_stat;
 			i++;
 			continue;		
@@ -106,11 +122,17 @@ int	start_reading(t_info *info)
 			free(info->rl);
 			exit(-1); // malloc err
 		}
-	//	print_cmds(cmds);
+//		print_cmds(cmds);
 		free_lexlst(info->tokens);
 		info->tokens = NULL;
 		info->ex_stat = executor(cmds, info);
 		printf("exit status: %d\n", info->ex_stat);
+	//	printf("global: %d\n", g_global);
+		if (info->ex_stat == -1)
+		{
+			//liberar y salir
+			return (-1);
+		}
 		free_cmds(cmds);
 //		rl_clear_history(info->rl);
 		free(info->rl);
