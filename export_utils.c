@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/04 16:09:11 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/10 12:18:19 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:16:21 by martalop         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ int	parse_export(char *str)
 		return (0);
 	if (str[0] == '\'' && str[1] == '\'')
 		return (0);
+	if (check_special_characters(str[0]) == 0)
+		return (0);
 	if (plus_sign(str, equal) == 0)
 		return (0);
 	while (str[i] && i != equal)
@@ -75,7 +77,7 @@ int	parse_export(char *str)
 int	check_special_characters(char c)
 {
 	if (c == '@' || c == '%' || c == '^' || c == '*' || \
-			c == '-')
+			c == '-' || c == ' ' || c == '\0')
 		return (0);
 	return (1);
 }

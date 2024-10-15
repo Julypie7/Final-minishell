@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 12:56:25 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/15 12:57:27 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:20:11 by martalop         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,8 @@ int	exec_simp_cmd(t_cmd *cmd, t_info *info, t_exec *exec_info)
 		expand_files(cmd->redirs, info->envp, info->prev_ex_stat);
 		if (builtin_cmd_protect(cmd, info) == 1)
 			return (1);
-		return (exec_builtin(cmd->arr_cmd, info, cmd, exec_info));
+		info->ex_stat = exec_builtin(cmd->arr_cmd, info, cmd, exec_info);
+		return (info->ex_stat);
 	}
 	cmd->pid = fork();
 	if (cmd->pid == -1)

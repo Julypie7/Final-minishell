@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:56:35 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/15 13:55:44 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 17:43:49 by martalop         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,15 @@ int	init_struct(t_info *info, char **env)
 
 void	init_sign(t_info *info)
 {
+	info->prev_ex_stat = info->ex_stat;
 	g_global = 0;
 	signal(SIGINT, handle_norm_sig);
 	signal(SIGQUIT, SIG_IGN);
 	info->prev_ex_stat = info->ex_stat;
 	info->ex_stat = g_global;
 	info->rl = readline("our minishell: ");
+	if (g_global)
+		info->prev_ex_stat = g_global;
 	if (info->rl)
 	{
 		if (info->rl[0])
@@ -58,7 +61,6 @@ void	second_part_exec(t_info *info, t_cmd *cmds)
 	info->ex_stat = executor(cmds, info);
 	printf("exit status: %d\n", info->ex_stat);
 	free_cmds(cmds);
-	rl_clear_history();
 	free(info->rl);
 	if (info->ex_stat == -1)
 		exit (-1);
