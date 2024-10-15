@@ -6,7 +6,7 @@
 /*   By: martalop <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/01 20:39:55 by martalop          #+#    #+#             */
-/*   Updated: 2024/10/14 17:10:42 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:00:18 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,39 +51,11 @@ void	free_cmds(t_cmd *cmds)
 	}
 }
 
-void	print_redirs_lst(t_redir *redirs)
+void	free_child(t_info *info, t_cmd *cmds, t_exec *exec_info)
 {
-	t_redir	*tmp;
-
-	tmp = redirs;
-	while (tmp)
-	{
-		printf("redir[%p]\ntoken: %d\nfile_name: %s\namb_red: %d\nfd: %d\nnext: %p\n\n",
-			tmp, tmp->type, tmp->file_name, tmp->amb_red, tmp->fd, tmp->next);
-		tmp = tmp->next;
-	}
-}
-
-void	print_cmds(t_cmd *cmds)
-{
-	t_cmd	*aux;
-	int		i;
-
-	aux = cmds;
-	while (aux)
-	{
-		printf("CMD[%p]\narr_cmd: %p\npath: %s\npid : %d\n", aux,
-			aux->arr_cmd, aux->path, aux->pid);
-		i = 0;
-		printf("fd_in: %d, fd_out: %d\nredirs: %p\nnext: %p\n", aux->fd_in,
-			aux->fd_out, aux->redirs, aux->next);
-		while (aux->arr_cmd && aux->arr_cmd[i])
-		{
-			printf("arr_cmd[%d]: %s\n", i, aux->arr_cmd[i]);
-			i++;
-		}
-		print_redirs_lst(aux->redirs);
-		write(2, "\n", 1);
-		aux = aux->next;
-	}
+	free_cmds(cmds);
+	free_envlst(info->envp);
+	free_exec_info(exec_info);
+	clear_history();
+	free(info->rl);
 }

@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:56:35 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/14 18:03:15 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:55:44 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include "execution.h"
 #include "expansion.h"
 
-int g_global;
+int	g_global;
 
 int	init_struct(t_info *info, char **env)
 {
@@ -32,98 +32,72 @@ int	init_struct(t_info *info, char **env)
 	info->tokens = NULL;
 	return (0);
 }
-/*
-int	do_shell(char *line, t_info *info)
+
+void	init_sign(t_info *info)
 {
-	token = do_token(line, info);
-	cmd = do_cmd(token, info);
-	exito = executa(cmd, info);
-	return (exito);
-}*/
+	g_global = 0;
+	signal(SIGINT, handle_norm_sig);
+	signal(SIGQUIT, SIG_IGN);
+	info->prev_ex_stat = info->ex_stat;
+	info->ex_stat = g_global;
+	info->rl = readline("our minishell: ");
+	if (info->rl)
+	{
+		if (info->rl[0])
+			add_history(info->rl);
+	}
+}
+
+void	second_part_exec(t_info *info, t_cmd *cmds)
+{
+	cmds = tkn_to_cmd(info->tokens);
+	if (!cmds)
+		exit_tkn_to_cmd(info);
+	free_lexlst(info->tokens);
+	info->tokens = NULL;
+	info->ex_stat = executor(cmds, info);
+	printf("exit status: %d\n", info->ex_stat);
+	free_cmds(cmds);
+	rl_clear_history();
+	free(info->rl);
+	if (info->ex_stat == -1)
+		exit (-1);
+}
 
 int	start_reading(t_info *info)
 {
 	t_cmd	*cmds;
-	int		i;
 
-	i = 0;
 	while (1)
 	{
-		g_global = 0;
-		signal(SIGINT, handle_norm_sig);
-		signal(SIGQUIT, SIG_IGN);
-		info->prev_ex_stat = info->ex_stat;
-		info->ex_stat = 0;
-		info->rl = readline("our minishell: ");
+		init_sign(info);
 		if (!info->rl)
-		{
-			if (info->copy)
-				free_envlst(info->copy);
-			info->copy = NULL;
 			return (1);
-		}
-		if (info->rl[0])
-			add_history(info->rl);
-		/*printf("user input: %s\n", info->rl);*/
-		if(!valid_line(info))
+		if (!valid_line(info))
 		{
 			free(info->rl);
-			i++;
-			continue;
+			continue ;
 		}
-//		info->exit = do_shell(info->rl, info);
 		if (!lexer(info))
 		{
-			free(info->rl);
-			info->ex_stat = info->prev_ex_stat;
-			continue;
+			exit_lexer(info);
+			continue ;
 		}
-		if (!info->tokens)
-		{
-			free(info->rl);
-			free_lexlst(info->tokens);
-			info->tokens = NULL;
-			info->ex_stat = info->prev_ex_stat;
-			i++;
-			continue;		
-		}
-//		print_lex_lst(info->tokens);
 		if (simple_syntax(info->tokens) == 2)
 		{
-			free(info->rl);
-			free_lexlst(info->tokens);
-			info->tokens = NULL;
-			info->ex_stat = 2;
-			i++;
-			printf("exit status: %d\n", info->ex_stat);
-			continue;
+			exit_simpl_syntax(info);
+			continue ;
 		}
-		cmds = tkn_to_cmd(info->tokens);
-		if (!cmds)
-		{
-			free_lexlst(info->tokens);
-			info->tokens = NULL;
-			free(info->rl);
-			exit(-1); // malloc err
-		}
-	//	print_cmds(cmds);
-		free_lexlst(info->tokens);
-		info->tokens = NULL;
-		info->ex_stat = executor(cmds, info);
-		printf("exit status: %d\n", info->ex_stat);
-		free_cmds(cmds);
-//		rl_clear_history(info->rl);
-		free(info->rl);
-		i++;
+		second_part_exec(info, cmds);
 	}
 	return (1);
 }
 
 int	main(int argc, char **argv, char **env)
 {
-	(void)argv;
 	t_info	info;
 
+	(void)argv;
 	if (argc != 1)
 	{
 		printf("This program does not accept arguments\n");
@@ -133,8 +107,10 @@ int	main(int argc, char **argv, char **env)
 		return (-1);
 	if (start_reading(&info))
 	{
+		if (info.copy)
+			free_envlst(info.copy);
 		free_envlst(info.envp);
 		free_lexlst(info.tokens);
-	}	
+	}
 	return (info.ex_stat);
 }

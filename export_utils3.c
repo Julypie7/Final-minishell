@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/04 16:24:08 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/14 18:07:22 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:02:15 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	handle_env_copy(t_info *info, char *export, int i, int flag)
 	res = 0;
 	if (flag && flag != 2)
 		res = add_node_to_copy(info, info->copy, export);
-	if (flag == 2/* || i == 2*/)
+	if (flag == 2)
 		return (2);
 	return (add_node_to_copy(info, info->envp, export));
 }

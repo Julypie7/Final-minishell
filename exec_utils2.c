@@ -6,7 +6,7 @@
 /*   By: martalop <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/17 20:30:32 by martalop          #+#    #+#             */
-/*   Updated: 2024/10/14 18:30:14 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:48:47 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,13 +81,30 @@ void	simp_child_cmd(t_cmd *cmd, t_info *info, t_exec *exec_info)
 	}
 }
 
-void	free_child(t_info *info, t_cmd *cmds, t_exec *exec_info)
+void	heredoc_child(char *str, char *lim, int *pipe_here)
 {
-	free_cmds(cmds);
-	free_envlst(info->envp);
-	free_exec_info(exec_info);
-	clear_history();
-	free(info->rl);
+	g_global = 0;
+	signal(SIGINT, handle_hd_sig);
+	signal(SIGQUIT, SIG_IGN);
+	while (1)
+	{
+		str = readline("> ");
+		if (!str || !ft_strncmp(str, lim, ft_strlen(lim) + 1))
+		{
+			if (!str)
+			{
+				ft_putstr_fd("bash: warning: here-document", 2);
+				ft_putstr_fd(" at line 1 delimited by end-of-file\n", 2);
+			}
+			g_global = 0;
+			free(str);
+			close(pipe_here[1]);
+			exit(0);
+		}
+		write(pipe_here[1], str, ft_strlen(str));
+		write(pipe_here[1], "\n", 1);
+		free(str);
+	}
 }
 
 int	heredoc(char *lim)
@@ -106,30 +123,10 @@ int	heredoc(char *lim)
 	if (pid == -1)
 		return (-1);
 	if (pid == 0)
-	{
-		g_global = 0;
-		signal(SIGINT, handle_hd_sig);
-		signal(SIGQUIT, SIG_IGN);
-		while (1)
-		{
-			str = readline("> ");
-			if (!str || !ft_strncmp(str, lim, ft_strlen(lim) + 1))
-			{
-				if (!str)
-					ft_putstr_fd("bash: warning: here-document at line 1 delimited by end-of-file\n", 2);
-				g_global = 0;
-				free(str);
-				close(pipe_here[1]);
-				exit(0);
-			}
-			write(pipe_here[1], str, ft_strlen(str));
-			write(pipe_here[1], "\n", 1);
-			free(str);
-		}
-	}
+		heredoc_child(str, lim, pipe_here);
 	else
 		signal(SIGINT, SIG_IGN);
-	waitpid(pid, &status, 0);	
+	waitpid(pid, &status, 0);
 	close(pipe_here[1]);
 	if (str)
 		free(str);

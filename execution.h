@@ -6,7 +6,7 @@
 /*   By: martalop <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/23 17:51:10 by martalop          #+#    #+#             */
-/*   Updated: 2024/10/14 17:14:21 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:27:45 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,12 @@ void	free_redir_lst(t_redir *redirs);
 void	free_cmds(t_cmd *cmds);
 void	free_exec_info(t_exec *exec_info);
 void	free_child(t_info *info, t_cmd *cmds, t_exec *exec_info);
+void	simpl_cmd_signal(t_cmd *cmd, t_info *info);
+int		builtin_cmd_protect(t_cmd *cmd, t_info *info);
+int		start_heredoc(t_cmd *segmts, t_info *info, t_exec *exec_info);
+void	mult_cmd_signal(t_cmd *segmts, t_info *info, t_exec *exec_info);
+int		prep_cmds(t_cmd *cmd, t_info *info, t_exec *exec_info);
+int		set_exec_info(t_envp *envp, t_exec *exec_info, t_cmd *segmts);
 
 // BUILTIN CHECK
 int		fill_arr_b(char **arr_b);

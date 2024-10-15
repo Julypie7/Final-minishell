@@ -6,7 +6,7 @@
 /*   By: ineimatu <ineimatu@student.42barcel>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 17:16:16 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/10 19:13:19 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:03:25 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,9 +39,8 @@ int	word(t_info *info, int i)
 	if (info->rl[i + j] == 39 || info->rl[i + j] == 34)
 	{
 		j = handle_quotes(info, i);
-		if (!add_node(ft_substr(info->rl, i, j), NULL, info))
+		if (!info->rl[j] && !add_node(ft_substr(info->rl, i, j), NULL, info))
 			return (-1);
-		return (j);
 	}
 	while (info->rl[i + j] && info->rl[j + i] != ' ' \
 			&& !token_exist(info->rl[i + j]))

@@ -6,7 +6,7 @@
 /*   By: ineimatu <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:00:48 by ineimatu          #+#    #+#             */
-/*   Updated: 2024/10/14 16:53:44 by ineimatu         ###   ########.fr       */
+/*   Updated: 2024/10/15 13:52:27 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,5 +48,8 @@ char	**envlst_to_arr(t_envp *envp);
 int		ft_strcmp(char *s1, char *s2);
 char	*ft_strcpy(char *s1, char *s2);
 int		cmdlst_size(t_cmd *cmds);
+void	exit_simpl_syntax(t_info *info);
+void	exit_lexer(t_info *info);
+void	exit_tkn_to_cmd(t_info *info);
 
 #endif

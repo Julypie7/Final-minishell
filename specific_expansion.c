@@ -6,7 +6,7 @@
 /*   By: martalop <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/13 14:19:19 by martalop          #+#    #+#             */
-/*   Updated: 2024/10/14 01:52:27 by martalop         ###   ########.fr       */
+/*   Updated: 2024/10/15 12:04:36 by ineimatu         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,10 @@ int	expand_files(t_redir *redirs, t_envp *envp, int prev_ex_stat)
 {
 	t_redir	*tmp_red;
 	char	**aux;
-	int		i;
 
-	i = 0;
 	tmp_red = redirs;
 	while (tmp_red)
 	{
-	//	tmp_red->file_name = ft_strdup("\"$alksd\"$holla");
-	//	printf("\ntmp_red->file_name: %s\n", tmp_red->file_name);
 		aux = NULL;
 		aux = full_expansion(tmp_red->file_name, envp, prev_ex_stat);
 		if (!aux)
@@ -61,8 +57,6 @@ char	**cmd_expansion(char **arr_cmd, t_envp *envp, int prev_ex_stat)
 	while (arr_cmd && arr_cmd[++x])
 	{
 		i = 0;
-//		arr_cmd[x] = ft_strdup("'\"  '\"$a'l'ksd\"$hollakas''");
-//		printf("arr_cmd[x]: %s\n", arr_cmd[x]);
 		aux = full_expansion(arr_cmd[x], envp, prev_ex_stat);
 		if (!aux)
 			return (NULL);
